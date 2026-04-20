@@ -21,11 +21,34 @@ Assignment 7
 ### 2. Server Logic Update
 
 ```python
-AVG_DECREASE_PER_SEC = 26.3
-TARGET_MOISTURE = 500
+import time
 
-def calculate_run_time(current_reading):
-    if current_reading <= TARGET_MOISTURE:
-        return 0
-    deficit = current_reading - TARGET_MOISTURE
-    return deficit / AVG_DECREASE_PER_SEC
+MOISTURE_CALIBRATION_FACTOR = 26.17
+TARGET_MOISTURE_VALUE = 520
+MAX_PUMP_DURATION = 10.0
+
+def process_irrigation_request(telemetry_data):
+    current_moisture = telemetry_data.get('soil_moisture')
+    
+    if current_moisture <= TARGET_MOISTURE_VALUE:
+        return {"action": "PUMP_OFF", "duration": 0, "reason": "Target reached"}
+
+    moisture_deficit = current_moisture - TARGET_MOISTURE_VALUE
+    required_seconds = moisture_deficit / MOISTURE_CALIBRATION_FACTOR
+    duration = min(round(required_seconds, 2), MAX_PUMP_DURATION)
+    
+    return {
+        "action": "PUMP_ON",
+        "duration": duration,
+        "msg": f"Calculated {duration}s to bridge {moisture_deficit} point deficit"
+    }
+
+telemetry_packet = {
+    "device_id": "ESP32_STATION_01",
+    "temp_c": 24.5,
+    "gas_ppm": 112,
+    "soil_moisture": 705
+}
+
+command = process_irrigation_request(telemetry_packet)
+print(f"Server Command: {command}")
