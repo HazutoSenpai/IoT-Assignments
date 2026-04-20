@@ -11,7 +11,4 @@ def main(event: func.EventHubEvent, outputBlob: func.Out[str]):
     body['processed_at'] = event.enqueued_time.isoformat()
 
     # 3. Save to Blob Storage via the Output Binding
-    # We simply 'set' the value of outputBlob, and Azure handles the upload
-    outputBlob.set(json.dumps(body))
-    
     logging.info("Telemetry successfully archived to Blob Storage.")
