@@ -1,5 +1,5 @@
 relay_off/__init__.py:
-```json
+```py
 import azure.functions as func
 from azure.iot.hub import IoTHubRegistryManager
 import os
