@@ -1,0 +1,26 @@
+import logging
+import azure.functions as func
+import json
+
+# Define Geofence Center (e.g., a Warehouse or Delivery Hub)
+GEOFENCE_LAT = 10.762622
+GEOFENCE_LON = 106.660172
+RADIUS_KM = 0.5
+
+def main(event: func.EventHubEvent, message: func.Out[str]):
+    body = json.loads(event.get_body().decode('utf-8'))
+    lat = body.get('lat')
+    lon = body.get('lon')
+
+    # Simplified distance calculation
+    distance = ((lat - GEOFENCE_LAT)**2 + (lon - GEOFENCE_LON)**2)**0.5 * 111
+
+    if distance <= RADIUS_KM:
+        # Condition: Inside Geofence
+        # Setting the 'message' object triggers the Twilio SMS binding
+        alert_text = f"ALERT: Vehicle entered geofence. Current distance: {round(distance, 2)}km."
+        message.set(json.dumps({"body": alert_text}))
+        logging.info("Geofence breach detected. SMS triggered.")
+    else:
+        # No action taken if outside to avoid spamming notifications
+        logging.info(f"Vehicle at {round(distance, 2)}km. No notification sent.")
